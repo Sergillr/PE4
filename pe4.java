@@ -23,7 +23,7 @@ public class PE4 {
     // Rentadora
     static boolean washingRunning = false;
     static String washingMode = "regular";
-
+    static int washingDuration = 0;
     // Portes
     // Estat de les portes (oberta/tancada i bloquejada/desbloquejada)
     static boolean entryDoorOpen = false;
@@ -40,31 +40,28 @@ public class PE4 {
     static boolean bedroom3DoorLocked = true;
     static boolean bathroomDoorOpen = false;
     static boolean bathroomDoorLocked = true;
-    static boolean panicMode = false;
 
+    static boolean panicMode = false;
+    static final String password = "Esdruxla123";
     // Termòstats
     static int entryTemp = 21;
-    static int livingTemp = 21;
-    static int kitchenTemp = 21;
-    static int bedroom1Temp = 21;
-    static int bedroom2Temp = 21;
-    static int bedroom3Temp = 21;
-    static int bathroomTemp = 21;
+    static int livingTemp = 26;
+    static int kitchenTemp = 28;
+    static int bedroom1Temp = 26;
+    static int bedroom2Temp = 26;
+    static int bedroom3Temp = 24;
+    static int bathroomTemp = 2;
 
     // Menú principal
+    
     public static void main(String[] args) {
         Scanner e = new Scanner(System.in);
-        String option;
+        String option = "";
         System.out.println("Totes les llums estan APAGADES.");
         do {
+            updateWashingProgress();
             if (panicMode) {
-                for (int panicModeTime = 30; panicModeTime > 0; panicModeTime = panicModeTime - 5) {
-                    System.out.println("Panic mode activat. Temps restant: " + panicModeTime + " minuts.");
-                    e.nextLine();
-                }
-                panicMode = false;
-                System.out.println("Panic mode desactivat.");
-                option = "";
+                panicModeLockDown(e);
             } else {
 
                 System.out.println("\nQuè vols fer?:");
@@ -75,18 +72,24 @@ public class PE4 {
                 System.out.println("e) Sortir");
                 option = e.nextLine();
                 // Opcions del menú principal
-                if (option.equalsIgnoreCase("a")) {
-                    lightMenu(e);
-                } else if (option.equalsIgnoreCase("b")) {
-                    washingMenu(e);
-                } else if (option.equalsIgnoreCase("c")) {
-                    doorMenu(e);
-                } else if (option.equalsIgnoreCase("d")) {
-                    thermostatMenu(e);
-                } else if (option.equalsIgnoreCase("e")) {
-                    System.out.println("Sortint del sistema SmartHome...");
-                } else {
-                    System.out.println("Opció no vàlida.");
+                switch (option) {
+                    case "a":
+                        lightMenu(e);
+                        break;
+                    case "b":
+                        washingMenu(e);
+                        break;
+                    case "c":
+                        doorMenu(e);
+                        break;
+                    case "d":
+                        thermostatMenu(e);
+                        break;
+                    case "e":
+                        System.out.println("Sortint del sistema SmartHome...");
+                        break;
+                    default:
+                        break;
                 }
             }
         } while (!option.equalsIgnoreCase("e"));
@@ -106,12 +109,16 @@ public class PE4 {
             System.out.println("d) Sortir");
             option = e.nextLine();
             // Opcions del menú de llums
-            if (option.equalsIgnoreCase("a")) {
-                allLightsMenu(e);
-            } else if (option.equalsIgnoreCase("b")) {
-                roomLightMenu(e);
-            } else if (option.equalsIgnoreCase("c")) {
-                showLightsStatus();
+            switch (option) {
+                case "a":
+                    allLightsMenu(e);
+                    break; 
+                case "b":
+                    roomLightMenu(e);
+                    break;
+                case "c":
+                    showLightsStatus();
+                    break;
             }
 
         } while (!option.equalsIgnoreCase("d"));
@@ -305,17 +312,26 @@ public class PE4 {
                 } else {
                     System.out.println("Mode no vàlid.");
                 }
-
+                washingDuration = 50;
                 System.out.println("Mode establert a: " + washingMode);
             } else if (option.equalsIgnoreCase("c")) {
                 System.out.println("Programa en execució: " + washingRunning);
                 System.out.println("Mode actual: " + washingMode);
+                System.out.println("Temps restant: " + washingDuration + " minuts.");
             } else if (option.equalsIgnoreCase("d")) {
                 washingRunning = false;
                 System.out.println("Programa cancel·lat.");
             }
 
         } while (!option.equalsIgnoreCase("e"));
+    }
+    // Funció per actualitzar el progrés de la rentadora
+    public static void updateWashingProgress( ) {
+        washingDuration = washingDuration - 5;
+        if (washingDuration <= 0 && washingRunning) {
+            washingRunning = false;
+            System.out.println("La rentadora ha acabat el seu cicle.");
+        }
     }
 
     // Portes
@@ -430,50 +446,50 @@ public class PE4 {
     }
 
     // Funció per actualitzar la temperatura de totes les habitacions
-public static void allRoomsTemperature(Scanner e) {
-    System.out.println("a) Triar temperatura manualment");
-    System.out.println("b) Augmentar temperatura (+1)");
-    System.out.println("c) Disminuir temperatura (-1)");
-    System.out.println("d) Sortir");
-    String action = e.nextLine();
+    public static void allRoomsTemperature(Scanner e) {
+        System.out.println("a) Triar temperatura manualment");
+        System.out.println("b) Augmentar temperatura (+1)");
+        System.out.println("c) Disminuir temperatura (-1)");
+        System.out.println("d) Sortir");
+        String action = e.nextLine();
 
-    if (action.equalsIgnoreCase("d")) {
-        return;
-    }
-
-    int newTemp = 0; // variable per guardar la temperatura manual
-    boolean manual = false;
-
-    if (action.equalsIgnoreCase("a")) {
-        System.out.print("Introdueix la nova temperatura: ");
-        String input = e.nextLine();
-        try {
-            newTemp = Integer.parseInt(input);
-            manual = true;
-        } catch (Exception ex) {
-            System.out.println("Valor no vàlid.");
+        if (action.equalsIgnoreCase("d")) {
             return;
         }
+
+        int newTemp = 0; // variable per guardar la temperatura manual
+        boolean manual = false;
+
+        if (action.equalsIgnoreCase("a")) {
+            System.out.print("Introdueix la nova temperatura: ");
+            String input = e.nextLine();
+            try {
+                newTemp = Integer.parseInt(input);
+                manual = true;
+            } catch (Exception ex) {
+                System.out.println("Valor no vàlid.");
+                return;
+            }
+        }
+
+        // Aplicar la mateixa acció a totes les habitacions
+        entryTemp = calculateNewTemperature(entryTemp, action, manual, newTemp);
+        livingTemp = calculateNewTemperature(livingTemp, action, manual, newTemp);
+        kitchenTemp = calculateNewTemperature(kitchenTemp, action, manual, newTemp);
+        bedroom1Temp = calculateNewTemperature(bedroom1Temp, action, manual, newTemp);
+        bedroom2Temp = calculateNewTemperature(bedroom2Temp, action, manual, newTemp);
+        bedroom3Temp = calculateNewTemperature(bedroom3Temp, action, manual, newTemp);
+        bathroomTemp = calculateNewTemperature(bathroomTemp, action, manual, newTemp);
+
+        System.out.println("Temperatures actualitzades:");
+        System.out.println("Entrada: " + entryTemp + "°C");
+        System.out.println("Menjador: " + livingTemp + "°C");
+        System.out.println("Cuina: " + kitchenTemp + "°C");
+        System.out.println("Habitació1: " + bedroom1Temp + "°C");
+        System.out.println("Habitació2: " + bedroom2Temp + "°C");
+        System.out.println("Habitació3: " + bedroom3Temp + "°C");
+        System.out.println("Bany: " + bathroomTemp + "°C");
     }
-
-    // Aplicar la mateixa acció a totes les habitacions
-    entryTemp    = calculateNewTemperature(entryTemp, action, manual, newTemp);
-    livingTemp   = calculateNewTemperature(livingTemp, action, manual, newTemp);
-    kitchenTemp  = calculateNewTemperature(kitchenTemp, action, manual, newTemp);
-    bedroom1Temp = calculateNewTemperature(bedroom1Temp, action, manual, newTemp);
-    bedroom2Temp = calculateNewTemperature(bedroom2Temp, action, manual, newTemp);
-    bedroom3Temp = calculateNewTemperature(bedroom3Temp, action, manual, newTemp);
-    bathroomTemp = calculateNewTemperature(bathroomTemp, action, manual, newTemp);
-
-    System.out.println("Temperatures actualitzades:");
-    System.out.println("Entrada: " + entryTemp + "°C");
-    System.out.println("Menjador: " + livingTemp + "°C");
-    System.out.println("Cuina: " + kitchenTemp + "°C");
-    System.out.println("Habitació1: " + bedroom1Temp + "°C");
-    System.out.println("Habitació2: " + bedroom2Temp + "°C");
-    System.out.println("Habitació3: " + bedroom3Temp + "°C");
-    System.out.println("Bany: " + bathroomTemp + "°C");
-}
 
     // Aquí afegiria les funcions específiques per portes, DRY també es pot aplicar
     public static void specificDoorMenu(Scanner e) {
@@ -489,6 +505,7 @@ public static void allRoomsTemperature(Scanner e) {
     public static void checkDoors() {
         System.out.println("Funció de comprovar portes no implementada encara.");
     }
+
     // Funció per menú de temperatura d'habitació específica
     public static void specificRoomTempMenu(Scanner e) {
         System.out.print("Escriu la habitació: ");
@@ -505,5 +522,27 @@ public static void allRoomsTemperature(Scanner e) {
             updateRoomTemperature(room, action, e);
             System.out.println("Temperatura de " + room + " actualitzada.");
         }
+    }
+    public static void panicModeLockDown(Scanner e) {
+        for (int panicModeTime = 30; panicModeTime > 0; panicModeTime = panicModeTime - 5) {
+            System.out.println("Panic mode activat. Temps restant: " + panicModeTime
+                    + " minuts. Introdueix la contrasenya si vols desactivar (en cas de fallar es sumara 10 minuts).");
+            String input = e.nextLine();
+            switch (input) {
+                case password:
+                    panicMode = false;
+                    panicModeTime = 0;
+                    System.out.println("Panic mode desactivat.");
+                    break;
+                case "":
+                    break;
+
+                default:
+                    panicModeTime = panicModeTime + 10;
+                    System.out.println("Contrasenya incorrecta. S'han afegit 10 minuts.");
+                    break;
+            }
+        }
+        panicMode = false;
     }
 }
